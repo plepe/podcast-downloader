@@ -2,9 +2,12 @@
   "name": "sternengeschichten2playlist",
   "version": "0.0.0",
   "description": "Creates a mp3 playlist for all Sternengeschichten from Florian Freistetter",
-  "scripts": {
-  },
+  "scripts": {},
   "bin": "./cli.js",
   "author": "Stephan Bösch-Plepelits <skunk@xover.mud.at>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^16.4.0",
+    "node-fetch": "^2.6.0"
+  }
 }
