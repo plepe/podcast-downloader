@@ -2,6 +2,7 @@
 const fetch = require('node-fetch')
 const JSDOM = require('jsdom').JSDOM
 const async = require('async')
+const fs = require('fs')
 
 fetch('https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/')
   .then(response => response.text())
@@ -17,7 +18,18 @@ fetch('https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/')
       const links = entry.getElementsByTagName('a')
       const file = links.length >= 2 ? links[1].href : null
 
-      done(null, { title, file })
+      if (file) {
+	const m = file.match(/\/([^/]+)$/)
+	const filename = m[1]
+
+	fetch(file)
+	  .then(response => response.buffer())
+	  .then(body => fs.writeFile('data/' + filename, body,
+	    (err) => done(err, { title, file: 'data/' + filename })
+	  ))
+      } else {
+	done(null, { title })
+      }
     },
     (err, result) => console.log(JSON.stringify(result, null, '  ')))
   })
