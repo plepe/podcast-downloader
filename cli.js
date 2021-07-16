@@ -18,12 +18,17 @@ function parseListFromPage (callback) {
 	const title = m ? m[1] : entry.textContent
 
 	const links = entry.getElementsByTagName('a')
-	const file = links.length >= 2 ? links[1].href : null
+	const url = links.length >= 2 ? links[1].href : null
 
-	done(null, { title, file })
+	done(null, { title, url })
       },
       callback)
     })
+}
+
+function useUrlAsFile (data, callback) {
+  data.forEach(entry => entry.file = entry.url)
+  callback(null, data)
 }
 
 function printResult(data, callback) {
@@ -33,5 +38,6 @@ function printResult(data, callback) {
 
 async.waterfall([
   parseListFromPage,
+  useUrlAsFile,
   printResult
 ])
