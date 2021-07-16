@@ -3,21 +3,35 @@ const fetch = require('node-fetch')
 const JSDOM = require('jsdom').JSDOM
 const async = require('async')
 
-fetch('https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/')
-  .then(response => response.text())
-  .then(body => {
-    const dom = new JSDOM(body)
-    const document = dom.window.document
+const url = 'https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/'
 
-    const list = document.querySelectorAll('.content > ul > li')
-    async.mapLimit(list, 4, (entry, done) => {
-      const m = entry.textContent.match(/^(.*) Download/)
-      const title = m ? m[1] : entry.textContent
+function parseListFromPage (callback) {
+  fetch(url)
+    .then(response => response.text())
+    .then(body => {
+      const dom = new JSDOM(body)
+      const document = dom.window.document
 
-      const links = entry.getElementsByTagName('a')
-      const file = links.length >= 2 ? links[1].href : null
+      const list = document.querySelectorAll('.content > ul > li')
+      async.mapLimit(list, 4, (entry, done) => {
+	const m = entry.textContent.match(/^(.*) Download/)
+	const title = m ? m[1] : entry.textContent
 
-      done(null, { title, file })
-    },
-    (err, result) => console.log(JSON.stringify(result, null, '  ')))
-  })
+	const links = entry.getElementsByTagName('a')
+	const file = links.length >= 2 ? links[1].href : null
+
+	done(null, { title, file })
+      },
+      callback)
+    })
+}
+
+function printResult(data, callback) {
+  console.log(JSON.stringify(data, null, '  '))
+  callback(null)
+}
+
+async.waterfall([
+  parseListFromPage,
+  printResult
+])
