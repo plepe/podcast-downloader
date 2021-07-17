@@ -36,8 +36,15 @@ function printResult(data, callback) {
   callback(null)
 }
 
-async.waterfall([
-  parseListFromPage,
-  useUrlAsFile,
-  printResult
-])
+async.waterfall(
+  [
+    parseListFromPage,
+    useUrlAsFile,
+    printResult
+  ],
+  err => {
+    if (err) {
+      console.error(err)
+    }
+  }
+)
