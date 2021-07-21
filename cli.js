@@ -11,6 +11,58 @@ const config = {
   parallelNormalizers: 4
 }
 
+function listFiles (path, callback) {
+  fs.readdir(path,
+    (err, result) => {
+      if (err) {
+	return callback(err)
+      }
+
+      const list = {}
+      result.forEach(file => {
+	const m = file.match(/^([^-]+) - (.*)\.mp3$/i)
+
+	if (m) {
+	  list[m[1]] = {
+	    id: m[1],
+	    title: m[2],
+	    filename: file
+	  }
+	}
+      })
+
+      callback(null, list)
+    }
+  )
+}
+
+function listDownloadedFiles (data, callback) {
+  if (typeof data === 'function') {
+    callback = data
+    data = []
+  }
+
+  listFiles('orig/',
+    (err, result) => {
+      data.forEach((entry, i) => {
+	if (entry.id in result) {
+	  delete result[entry.id]
+	}
+      })
+
+      for (const i in result) {
+	data.push(result[i])
+      }
+
+      callback(err, data)
+    }
+  )
+}
+
+function renameDownloadedFiles (callback) {
+  downloadFiles
+}
+
 function parseListFromPage (callback) {
   fetch(url)
     .then(response => response.text())
@@ -41,6 +93,7 @@ function generateFilenames (data, callback) {
   data.forEach(entry => {
     let m = entry.title.match(/^Folge ([0-9]*)\s*:?\s*([^\[]*)(\[.*|)$/)
     if (m) {
+      entry.id = m[1]
       entry.filename = m[1] + ' - ' + m[2].trim() + '.mp3'
     } else {
       console.error("Can't parse num + title from: " + entry.title)
@@ -136,11 +189,13 @@ function printResult(data, callback) {
 
 async.waterfall(
   [
+//    renameDownloadedFiles,
     parseListFromPage,
     useUrlAsFile,
     generateFilenames,
-    downloadFiles,
-    normalizeFiles,
+    listDownloadedFiles,
+//    downloadFiles,
+//    normalizeFiles,
     printResult
   ],
   err => {
