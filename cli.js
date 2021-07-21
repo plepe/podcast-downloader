@@ -5,28 +5,45 @@ const async = require('async')
 const fs = require('fs')
 const child_process = require('child_process')
 
-const url = 'https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/'
+const def = {
+  type: 'html',
+  url: 'https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/',
+  htmlQuerySelector: '.content > ul > li',
+  htmlIdRegexp: /^Folge ([0-9]*)/,
+  htmlNameRegexp: /^Folge (?:[0-9]*)\s*:?\s*([^\[]+)\s*(Download|\[)/,
+  htmlTitleRegexp: /^(Folge (?:[0-9]*)\s*:?\s*([^\[]+))\s*(Download|\[)/,
+  htmlUseLinkNum: 1
+}
+
 const config = {
   parallelDownloads: 1,
   parallelNormalizers: 4
 }
 
 function parseListFromPage (callback) {
-  fetch(url)
+  fetch(def.url)
     .then(response => response.text())
     .then(body => {
       const dom = new JSDOM(body)
       const document = dom.window.document
 
-      const list = document.querySelectorAll('.content > ul > li')
+      const list = document.querySelectorAll(def.htmlQuerySelector)
       async.mapLimit(list, 4, (entry, done) => {
-	const m = entry.textContent.match(/^(.*) Download/)
-	const title = m ? m[1] : entry.textContent
+	d = {}
+
+	let m = entry.textContent.match(def.htmlTitleRegexp)
+	d.title = (m ? m[1] : entry.textContent).trim()
+
+	m = entry.textContent.match(def.htmlIdRegexp)
+	d.id = m ? m[1].trim() : null
+
+	m = entry.textContent.match(def.htmlNameRegexp)
+	d.name = m ? m[1].trim() : null
 
 	const links = entry.getElementsByTagName('a')
-	const url = links.length >= 2 ? links[1].href : null
+	d.url = links.length > def.htmlUseLinkNum ? links[def.htmlUseLinkNum].href : null
 
-	done(null, { title, url })
+	done(null, d)
       },
       callback)
     })
@@ -39,12 +56,7 @@ function useUrlAsFile (data, callback) {
 
 function generateFilenames (data, callback) {
   data.forEach(entry => {
-    let m = entry.title.match(/^Folge ([0-9]*)\s*:?\s*([^\[]*)(\[.*|)$/)
-    if (m) {
-      entry.filename = m[1] + ' - ' + m[2].trim() + '.mp3'
-    } else {
-      console.error("Can't parse num + title from: " + entry.title)
-    }
+    entry.filename = entry.id + ' - ' + entry.name + '.mp3'
   })
 
   callback(null, data)
