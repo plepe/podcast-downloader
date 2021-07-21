@@ -3,10 +3,12 @@ const fetch = require('node-fetch')
 const JSDOM = require('jsdom').JSDOM
 const async = require('async')
 const fs = require('fs')
+const child_process = require('child_process')
 
 const url = 'https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/'
 const config = {
-  parallelDownloads: 1
+  parallelDownloads: 1,
+  parallelNormalizers: 4
 }
 
 function parseListFromPage (callback) {
@@ -85,6 +87,48 @@ function downloadFile (entry, callback) {
   )
 }
 
+function normalizeFiles (data, callback) {
+  async.eachLimit(data, config.parallelNormalizers, normalizeFile, err => callback(err, data))
+}
+
+function normalizeFile (entry, callback) {
+  let srcFile = 'orig/' + entry.filename
+  let destFile = 'data/' + entry.filename
+
+  async.parallel(
+    {
+      srcStat: done => fs.stat(srcFile, (err, result) => {
+	done(null, result)
+      }),
+      destStat: done => fs.stat(destFile, (err, result) => {
+	if (err) {
+	 return done(null)
+	}
+
+	done(err, result)
+      })
+    },
+    (err, { srcStat, destStat }) => {
+      if (err) {
+	console.error(err)
+        return callback(null)
+      }
+
+      if (!srcStat || destStat) {
+	return callback(null)
+      }
+
+      console.error("Normalizing", entry.filename)
+      child_process.execFile('ffmpeg', [ '-i', srcFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
+        if (err) { console.error(err) }
+        entry.file = destFile
+
+        callback()
+      })
+    }
+  )
+}
+
 function printResult(data, callback) {
   console.log(JSON.stringify(data, null, '  '))
   callback(null)
@@ -96,6 +140,7 @@ async.waterfall(
     useUrlAsFile,
     generateFilenames,
     downloadFiles,
+    normalizeFiles,
     printResult
   ],
   err => {
