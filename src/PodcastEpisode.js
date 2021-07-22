@@ -3,6 +3,18 @@ const async = require('async')
 const fs = require('fs')
 const child_process = require('child_process')
 
+const strReplacer = {
+  '\\?': '',
+  ':': ' -',
+  '<': '',
+  '>': '',
+  '/': '-',
+  '\\+': '',
+  '\\\\': '-',
+  '\\|': '-',
+  '\\*': ''
+}
+
 module.exports = class PodcastEpisode {
   constructor (podcast) {
     this.podcast = podcast
@@ -38,6 +50,32 @@ module.exports = class PodcastEpisode {
     callback()
   }
 
+  renameExistingFiles (callback) {
+    async.parallel(
+      [
+        done => {
+          const file = 'orig/' + this.filename
+          if (this.downloadedFile && this.downloadedFile !== file) {
+            fs.rename(this.downloadedFile, file, done)
+            this.downloadedFile = file
+          } else {
+            done()
+          }
+        },
+        done => {
+          const file = 'data/' + this.filename
+          if (this.normalizedFile && this.normalizedFile !== file) {
+            fs.rename(this.normalizedFile, file, done)
+            this.normalizedFile = file
+          } else {
+            done()
+          }
+        }
+      ],
+      err => callback(err)
+    )
+  }
+
   useUrlAsFile (callback) {
     this.file = this.url
     callback()
@@ -45,6 +83,11 @@ module.exports = class PodcastEpisode {
 
   generateFilename (callback) {
     this.filename = this.id + ' - ' + this.name + '.mp3'
+
+    for (let k in strReplacer) {
+      this.filename = this.filename.replace(new RegExp(k, 'g'), strReplacer[k])
+    }
+
     callback()
   }
 
@@ -119,6 +162,7 @@ module.exports = class PodcastEpisode {
     async.waterfall(
       [
         done => this.generateFilename(done),
+        done => this.renameExistingFiles(done),
         done => this.downloadFile(done),
         done => this.normalizeFile(done)
       ],
