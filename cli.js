@@ -73,13 +73,14 @@ function downloadFile (entry, callback) {
     return callback(null)
   }
 
-  let destFile = 'orig/' + entry.filename
+  const destFile = 'orig/' + entry.filename
 
   fs.stat(destFile,
    (err, data) => {
      if (!err) {
        console.error(entry.filename, 'exists')
        entry.file = destFile
+       entry.downloadFile = destFile
        return callback(null, entry)
      }
 
@@ -91,9 +92,10 @@ function downloadFile (entry, callback) {
          })
        .then(body => fs.writeFile(destFile, body,
          (err) => {
-           if (err) { return done(err) }
+           if (err) { return callback(err) }
 
 	   entry.file = destFile
+	   entry.downloadFile = destFile
            callback(null, entry)
          })
        )
@@ -106,12 +108,11 @@ function normalizeFiles (data, callback) {
 }
 
 function normalizeFile (entry, callback) {
-  let srcFile = 'orig/' + entry.filename
-  let destFile = 'data/' + entry.filename
+  const destFile = 'data/' + entry.filename
 
   async.parallel(
     {
-      srcStat: done => fs.stat(srcFile, (err, result) => {
+      srcStat: done => fs.stat(entry.downloadFile, (err, result) => {
 	done(null, result)
       }),
       destStat: done => fs.stat(destFile, (err, result) => {
@@ -129,13 +130,16 @@ function normalizeFile (entry, callback) {
       }
 
       if (!srcStat || destStat) {
+        entry.normalizedFile = destFile
+        entry.file = destFile
 	return callback(null)
       }
 
       console.error("Normalizing", entry.filename)
-      child_process.execFile('ffmpeg', [ '-i', srcFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
+      child_process.execFile('ffmpeg', [ '-i', entry.downloadFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
         if (err) { console.error(err) }
         entry.file = destFile
+        entry.normalizedFile = destFile
 
         callback()
       })
