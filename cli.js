@@ -10,8 +10,8 @@ const def = {
   url: 'https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/',
   htmlQuerySelector: '.content > ul > li',
   htmlIdRegexp: /^Folge ([0-9]*)/,
-  htmlNameRegexp: /^Folge (?:[0-9]*)\s*:?\s*([^\[]+)\s*(Download|\[)/,
-  htmlTitleRegexp: /^(Folge (?:[0-9]*)\s*:?\s*([^\[]+))\s*(Download|\[)/,
+  htmlNameRegexp: /^Folge (?:[0-9]*)\s*:?\s*([^\[]+)\s*(Download)/,
+  htmlTitleRegexp: /^(Folge (?:[0-9]*)\s*:?\s*([^\[]+))\s*(Download)/,
   htmlUseLinkNum: 1
 }
 
@@ -30,6 +30,8 @@ function parseListFromPage (callback) {
       const list = document.querySelectorAll(def.htmlQuerySelector)
       async.mapLimit(list, 4, (entry, done) => {
 	d = {}
+
+        d.htmlTitle = entry.textContent
 
 	let m = entry.textContent.match(def.htmlTitleRegexp)
 	d.title = (m ? m[1] : entry.textContent).trim()
