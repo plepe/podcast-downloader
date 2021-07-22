@@ -130,7 +130,7 @@ module.exports = class Podcast {
     async.waterfall(
       [
         done => this.parseListFromPage(done),
-        done => this.select(done),
+        //done => this.select(done),
         done => this.loadExistingFiles(done),
         done => this.processAll(done),
         done => this.printResult(done)
