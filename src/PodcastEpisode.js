@@ -4,25 +4,24 @@ const fs = require('fs')
 const child_process = require('child_process')
 
 module.exports = class PodcastEpisode {
-  constructor (def, config) {
-    this.def = def
-    this.config = config
+  constructor (podcast) {
+    this.podcast = podcast
   }
 
   parseHtmlTitle (dom, callback) {
     this.htmlTitle = dom.textContent
 
-    let m = dom.textContent.match(this.def.htmlTitleRegexp)
+    let m = dom.textContent.match(this.podcast.def.htmlTitleRegexp)
     this.title = (m ? m[1] : dom.textContent).trim()
 
-    m = dom.textContent.match(this.def.htmlIdRegexp)
+    m = dom.textContent.match(this.podcast.def.htmlIdRegexp)
     this.id = m ? m[1].trim() : null
 
-    m = dom.textContent.match(this.def.htmlNameRegexp)
+    m = dom.textContent.match(this.podcast.def.htmlNameRegexp)
     this.name = m ? m[1].trim() : null
 
     const links = dom.getElementsByTagName('a')
-    this.url = links.length > this.def.htmlUseLinkNum ? links[this.def.htmlUseLinkNum].href : null
+    this.url = links.length > this.podcast.def.htmlUseLinkNum ? links[this.podcast.def.htmlUseLinkNum].href : null
 
     callback()
   }
