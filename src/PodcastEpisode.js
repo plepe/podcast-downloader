@@ -26,6 +26,18 @@ module.exports = class PodcastEpisode {
     callback()
   }
 
+  fromExisting (data, callback) {
+    for (let k in data) {
+      this[k] = data[k]
+    }
+
+    if (!this.title) {
+      this.title = "Folge " + this.id + ": " + this.name
+    }
+
+    callback()
+  }
+
   useUrlAsFile (callback) {
     this.file = this.url
     callback()

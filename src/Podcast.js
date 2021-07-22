@@ -45,7 +45,38 @@ module.exports = class Podcast {
           }
         })
 
-        callback()
+        let add = []
+
+        for (let id in downloaded) {
+          const d = downloaded[id]
+
+          d.downloadedFile = 'orig/' + d.filename
+
+          if (id in normalized) {
+            d.normalizedFile = 'data/' + normalized[id].filename
+            delete normalized[id]
+          }
+
+          add.push(d)
+        }
+
+        for (let i in normalized) {
+          const d = normalized[i]
+
+          d.normalizedFile = 'data/' + d.filename
+
+          add.push(d)
+        }
+
+        async.each(
+          add,
+          (d, done) => {
+            const episode = new PodcastEpisode(this)
+            this.list.push(episode)
+            episode.fromExisting(d, done)
+          },
+          callback
+        )
       }
     )
   }
@@ -99,8 +130,8 @@ module.exports = class Podcast {
     async.waterfall(
       [
         done => this.parseListFromPage(done),
-        done => this.loadExistingFiles(done),
         done => this.select(done),
+        done => this.loadExistingFiles(done),
         done => this.processAll(done),
         done => this.printResult(done)
       ],
