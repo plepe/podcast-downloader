@@ -42,75 +42,54 @@ module.exports = class PodcastEpisode {
       return callback(null)
     }
 
+    if (this.downloadedFile) {
+      console.error(this.id, this.filename, 'exists')
+      this.file = this.downloadedFile
+      return callback(null)
+    }
+
     const destFile = 'orig/' + this.filename
 
-    fs.stat(destFile,
-     (err, data) => {
-       if (!err) {
-         console.error(this.id, this.filename, 'exists')
-         this.file = destFile
-         this.downloadFile = destFile
-         return callback(null)
-       }
+    console.error(this.id, "Downloading", this.filename)
 
-       console.error(this.id, "Downloading", this.filename)
+    fetch(this.url)
+      .then(response => response.buffer(),
+        err => {
+          console.error('error downloading', this.filename)
+        })
+      .then(body => fs.writeFile(destFile, body,
+        (err) => {
+          if (err) { return callback(err) }
 
-       fetch(this.url)
-         .then(response => response.buffer(),
-           err => {
-             console.error('error downloading', this.filename)
-           })
-         .then(body => fs.writeFile(destFile, body,
-           (err) => {
-             if (err) { return callback(err) }
-
-             this.file = destFile
-             this.downloadFile = destFile
-             callback(null)
-           })
-         )
-      }
-    )
+          this.file = destFile
+          this.downloadedFile = destFile
+          callback(null)
+        })
+      )
   }
 
   normalizeFile (callback) {
     const destFile = 'data/' + this.filename
 
-    async.parallel(
-      {
-        srcStat: done => fs.stat(this.downloadFile, (err, result) => {
-          done(null, result)
-        }),
-        destStat: done => fs.stat(destFile, (err, result) => {
-          if (err) {
-           return done(null)
-          }
+    if (this.normalizedFile) {
+      console.error(this.id, this.filename, 'exists')
+      this.file = this.normalizedFile
+      return callback(null)
+    }
 
-          done(err, result)
-        })
-      },
-      (err, { srcStat, destStat }) => {
-        if (err) {
-          console.error(err)
-          return callback(null)
-        }
+    if (!this.downloadedFile) {
+      console.error(this.id, this.filename, 'not downloaded')
+      return callback(null)
+    }
 
-        if (!srcStat || destStat) {
-          this.normalizedFile = destFile
-          this.file = destFile
-          return callback(null)
-        }
+    console.error("Normalizing", this.filename)
+    child_process.execFile('ffmpeg', [ '-i', this.downloadedFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
+      if (err) { console.error(err) }
+      this.file = destFile
+      this.normalizedFile = destFile
 
-        console.error("Normalizing", this.filename)
-        child_process.execFile('ffmpeg', [ '-i', this.downloadFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
-          if (err) { console.error(err) }
-          this.file = destFile
-          this.normalizedFile = destFile
-
-          callback()
-        })
-      }
-    )
+      callback()
+    })
   }
 
   printResult (callback) {

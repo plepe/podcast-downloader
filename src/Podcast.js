@@ -3,12 +3,51 @@ const fetch = require('node-fetch')
 const async = require('async')
 
 const PodcastEpisode = require('./PodcastEpisode')
+const listFiles = require('./listFiles')
 
 module.exports = class Podcast {
   constructor (def, config) {
     this.def = def
     this.config = config
     this.list = []
+  }
+
+  loadExistingFiles (callback) {
+    async.parallel(
+      {
+        downloaded: done => listFiles('orig/', done),
+        normalized: done => listFiles('data/', done)
+      },
+      (err, { downloaded, normalized }) => {
+        if (err) {
+          return callback(err)
+        }
+
+        this.list.forEach(entry => {
+          if (entry.id in downloaded) {
+            entry.downloadedFile = 'orig/' + downloaded[entry.id].filename
+
+            if (!entry.name) {
+              entry.name = downloaded[entry.id].name
+            }
+
+            delete downloaded[entry.id]
+          }
+
+          if (entry.id in normalized) {
+            entry.normalizedFile = 'data/' + normalized[entry.id].filename
+
+            if (!entry.name) {
+              entry.name = normalized[entry.id].name
+            }
+
+            delete normalized[entry.id]
+          }
+        })
+
+        callback()
+      }
+    )
   }
 
   parseListFromPage (callback) {
@@ -52,7 +91,7 @@ module.exports = class Podcast {
   }
 
   select (callback) {
-    this.list = this.list.slice(0, 2)
+    this.list = this.list.slice(0, 3)
     callback(null)
   }
 
@@ -60,6 +99,7 @@ module.exports = class Podcast {
     async.waterfall(
       [
         done => this.parseListFromPage(done),
+        done => this.loadExistingFiles(done),
         done => this.select(done),
         done => this.processAll(done),
         done => this.printResult(done)
