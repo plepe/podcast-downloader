@@ -18,6 +18,16 @@ parser.add_argument('--profile', '-p', {
   default: 'default'
 })
 
+parser.add_argument('--url', {
+  help: 'URL to download podcast episode list from (e.g. the RSS feed URL). Can be defined from the profile.',
+  default: null
+})
+
+parser.add_argument('--id', {
+  help: 'ID of the podcast - will be used to create a directory with that name.',
+  default: null
+})
+
 const args = parser.parse_args()
 
 fs.readFile(
@@ -29,6 +39,14 @@ fs.readFile(
     }
 
     const def = JSON.parse(result)
+
+    if (args.url) {
+      def.url = args.url
+    }
+
+    if (args.id) {
+      def.id = args.id
+    }
 
     const podcast = new Podcast(def, config)
     podcast.process()
