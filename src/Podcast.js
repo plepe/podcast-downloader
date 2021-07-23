@@ -61,9 +61,9 @@ module.exports = class Podcast {
           }
         })
 
-        let add = []
+        const add = []
 
-        for (let id in downloaded) {
+        for (const id in downloaded) {
           const d = downloaded[id]
 
           d.downloadedFile = this.pathDownloaded() + d.filename
@@ -76,7 +76,7 @@ module.exports = class Podcast {
           add.push(d)
         }
 
-        for (let i in normalized) {
+        for (const i in normalized) {
           const d = normalized[i]
 
           d.normalizedFile = this.pathNormalized() + d.filename
@@ -104,19 +104,19 @@ module.exports = class Podcast {
         const dom = new JSDOM(body)
         const document = dom.window.document
 
-	const list = document.querySelectorAll('rss > channel > item')
+        const list = document.querySelectorAll('rss > channel > item')
 
-	async.eachOf(list,
-	  (entry, index, done) => {
-	    const episode = new PodcastEpisode(this)
-	    this.list.push(episode)
+        async.eachOf(list,
+          (entry, index, done) => {
+            const episode = new PodcastEpisode(this)
+            this.list.push(episode)
 
-	    episode.parseRssEntry(entry, list.length - index - 1, err => done(err))
-	  },
-	  (err) => {
-	    callback(err)
-	  }
-	)
+            episode.parseRssEntry(entry, list.length - index - 1, err => done(err))
+          },
+          (err) => {
+            callback(err)
+          }
+        )
       })
   }
 
@@ -170,18 +170,18 @@ module.exports = class Podcast {
 
     switch (this.def.type) {
       case 'html':
-	parseFun = this.parseListFromPage
-	break
+        parseFun = this.parseListFromPage
+        break
       case 'rss':
       default:
-	parseFun = this.parseListFromRss
+        parseFun = this.parseListFromRss
     }
 
     async.waterfall(
       [
         done => parseFun.call(this, done),
-	done => this.createDirectories(done),
-        //done => this.select(done),
+        done => this.createDirectories(done),
+        // done => this.select(done),
         done => this.loadExistingFiles(done),
         done => this.processAll(done),
         done => this.printResult(done)

@@ -53,12 +53,12 @@ module.exports = class PodcastEpisode {
   }
 
   fromExisting (data, callback) {
-    for (let k in data) {
+    for (const k in data) {
       this[k] = data[k]
     }
 
     if (!this.title) {
-      this.title = "Folge " + this.id + ": " + this.name
+      this.title = 'Folge ' + this.id + ': ' + this.name
     }
 
     callback()
@@ -98,7 +98,7 @@ module.exports = class PodcastEpisode {
   generateFilename (callback) {
     this.filename = this.id + ' - ' + this.name + '.mp3'
 
-    for (let k in strReplacer) {
+    for (const k in strReplacer) {
       this.filename = this.filename.replace(new RegExp(k, 'g'), strReplacer[k])
     }
 
@@ -119,7 +119,7 @@ module.exports = class PodcastEpisode {
 
     const destFile = this.podcast.pathDownloaded() + this.filename
 
-    console.error(this.id, "Downloading", this.filename)
+    console.error(this.id, 'Downloading', this.filename)
 
     fetch(this.url)
       .then(response => response.buffer(),
@@ -151,8 +151,8 @@ module.exports = class PodcastEpisode {
       return callback(null)
     }
 
-    console.error("Normalizing", this.filename)
-    child_process.execFile('ffmpeg', [ '-i', this.downloadedFile, '-filter:a', 'loudnorm', '-y', destFile ], {}, (err) => {
+    console.error('Normalizing', this.filename)
+    child_process.execFile('ffmpeg', ['-i', this.downloadedFile, '-filter:a', 'loudnorm', '-y', destFile], {}, (err) => {
       if (err) { console.error(err) }
       this.file = destFile
       this.normalizedFile = destFile
@@ -171,7 +171,7 @@ module.exports = class PodcastEpisode {
   }
 
   process (callback) {
-    //this.useUrlAsFile(callback)
+    // this.useUrlAsFile(callback)
 
     async.waterfall(
       [
