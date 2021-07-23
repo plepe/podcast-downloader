@@ -1,7 +1,7 @@
 const fetch = require('node-fetch')
 const async = require('async')
 const fs = require('fs')
-const child_process = require('child_process')
+const childProcess = require('child_process')
 
 const strReplacer = {
   '\\?': '',
@@ -124,7 +124,7 @@ module.exports = class PodcastEpisode {
     fetch(this.url)
       .then(response => response.buffer(),
         err => {
-          console.error('error downloading', this.filename)
+          console.error('error downloading', this.filename, err)
         })
       .then(body => fs.writeFile(destFile, body,
         (err) => {
@@ -152,7 +152,7 @@ module.exports = class PodcastEpisode {
     }
 
     console.error('Normalizing', this.filename)
-    child_process.execFile('ffmpeg', ['-i', this.downloadedFile, '-filter:a', 'loudnorm', '-y', destFile], {}, (err) => {
+    childProcess.execFile('ffmpeg', ['-i', this.downloadedFile, '-filter:a', 'loudnorm', '-y', destFile], {}, (err) => {
       if (err) { console.error(err) }
       this.file = destFile
       this.normalizedFile = destFile
