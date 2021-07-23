@@ -1,6 +1,7 @@
 const JSDOM = require('jsdom').JSDOM
 const fetch = require('node-fetch')
 const async = require('async')
+const fs = require('fs')
 
 const PodcastEpisode = require('./PodcastEpisode')
 const listFiles = require('./listFiles')
@@ -18,6 +19,13 @@ module.exports = class Podcast {
 
   pathNormalized () {
     return this.def.id + '/normalized/'
+  }
+
+  createDirectories (callback) {
+    async.parallel([
+      done => fs.mkdir(this.pathDownloaded(), { recursive: true }, done),
+      done => fs.mkdir(this.pathNormalized(), { recursive: true }, done)
+    ], err => callback(err))
   }
 
   loadExistingFiles (callback) {
@@ -138,6 +146,7 @@ module.exports = class Podcast {
     async.waterfall(
       [
         done => this.parseListFromPage(done),
+	done => this.createDirectories(done),
         //done => this.select(done),
         done => this.loadExistingFiles(done),
         done => this.processAll(done),
