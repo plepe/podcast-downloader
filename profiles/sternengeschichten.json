@@ -1,4 +1,5 @@
 {
+    "id": "sternengeschichten",
     "type": "html",
     "url": "https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/",
     "htmlQuerySelector": ".content > ul > li",

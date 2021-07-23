@@ -54,7 +54,7 @@ module.exports = class PodcastEpisode {
     async.parallel(
       [
         done => {
-          const file = 'orig/' + this.filename
+          const file = this.podcast.pathDownloaded() + this.filename
           if (this.downloadedFile && this.downloadedFile !== file) {
             fs.rename(this.downloadedFile, file, done)
             this.downloadedFile = file
@@ -63,7 +63,7 @@ module.exports = class PodcastEpisode {
           }
         },
         done => {
-          const file = 'data/' + this.filename
+          const file = this.podcast.pathNormalized() + this.filename
           if (this.normalizedFile && this.normalizedFile !== file) {
             fs.rename(this.normalizedFile, file, done)
             this.normalizedFile = file
@@ -103,7 +103,7 @@ module.exports = class PodcastEpisode {
       return callback(null)
     }
 
-    const destFile = 'orig/' + this.filename
+    const destFile = this.podcast.pathDownloaded() + this.filename
 
     console.error(this.id, "Downloading", this.filename)
 
@@ -124,7 +124,7 @@ module.exports = class PodcastEpisode {
   }
 
   normalizeFile (callback) {
-    const destFile = 'data/' + this.filename
+    const destFile = this.podcast.pathNormalized() + this.filename
 
     if (this.normalizedFile) {
       console.error(this.id, this.filename, 'exists')

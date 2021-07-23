@@ -12,11 +12,19 @@ module.exports = class Podcast {
     this.list = []
   }
 
+  pathDownloaded () {
+    return this.def.id + '/downloaded/'
+  }
+
+  pathNormalized () {
+    return this.def.id + '/normalized/'
+  }
+
   loadExistingFiles (callback) {
     async.parallel(
       {
-        downloaded: done => listFiles('orig/', done),
-        normalized: done => listFiles('data/', done)
+        downloaded: done => listFiles(this.pathDownloaded(), done),
+        normalized: done => listFiles(this.pathNormalized(), done)
       },
       (err, { downloaded, normalized }) => {
         if (err) {
@@ -25,7 +33,7 @@ module.exports = class Podcast {
 
         this.list.forEach(entry => {
           if (entry.id in downloaded) {
-            entry.downloadedFile = 'orig/' + downloaded[entry.id].filename
+            entry.downloadedFile = this.pathDownloaded() + downloaded[entry.id].filename
 
             if (!entry.name) {
               entry.name = downloaded[entry.id].name
@@ -35,7 +43,7 @@ module.exports = class Podcast {
           }
 
           if (entry.id in normalized) {
-            entry.normalizedFile = 'data/' + normalized[entry.id].filename
+            entry.normalizedFile = this.pathNormalized() + normalized[entry.id].filename
 
             if (!entry.name) {
               entry.name = normalized[entry.id].name
@@ -50,10 +58,10 @@ module.exports = class Podcast {
         for (let id in downloaded) {
           const d = downloaded[id]
 
-          d.downloadedFile = 'orig/' + d.filename
+          d.downloadedFile = this.pathDownloaded() + d.filename
 
           if (id in normalized) {
-            d.normalizedFile = 'data/' + normalized[id].filename
+            d.normalizedFile = this.pathNormalized() + normalized[id].filename
             delete normalized[id]
           }
 
@@ -63,7 +71,7 @@ module.exports = class Podcast {
         for (let i in normalized) {
           const d = normalized[i]
 
-          d.normalizedFile = 'data/' + d.filename
+          d.normalizedFile = this.pathNormalized() + d.filename
 
           add.push(d)
         }
