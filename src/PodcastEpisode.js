@@ -112,7 +112,7 @@ module.exports = class PodcastEpisode {
     }
 
     if (this.downloadedFile) {
-      console.error(this.id, this.filename, 'exists')
+      console.error(this.id, this.filename, 'already downloaded')
       this.file = this.downloadedFile
       return callback(null)
     }
@@ -145,7 +145,7 @@ module.exports = class PodcastEpisode {
     const destFile = this.podcast.pathNormalized() + this.filename
 
     if (this.normalizedFile) {
-      console.error(this.id, this.filename, 'exists')
+      console.error(this.id, this.filename, 'already normalized')
       this.file = this.normalizedFile
       return callback(null)
     }
