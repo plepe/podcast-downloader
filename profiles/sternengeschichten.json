@@ -1,0 +1,9 @@
+{
+    "type": "html",
+    "url": "https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/",
+    "htmlQuerySelector": ".content > ul > li",
+    "htmlIdRegexp": "^Folge ([0-9]*)",
+    "htmlNameRegexp": "^Folge (?:[0-9]*)\\s*:?\\s*([^\\[]+)\\s*(Download)",
+    "htmlTitleRegexp": "^(Folge (?:[0-9]*)\\s*:?\\s*([^\\[]+))\\s*(Download)",
+    "htmlUseLinkNum": 1
+}
