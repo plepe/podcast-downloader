@@ -98,6 +98,10 @@ module.exports = class Podcast {
   }
 
   parseListFromRss (callback) {
+    if (!this.def.url) {
+      return callback(new Error('No URL set, please provide one with --url'))
+    }
+
     fetch(this.def.url)
       .then(response => response.text())
       .then(body => {
@@ -121,6 +125,10 @@ module.exports = class Podcast {
   }
 
   parseListFromPage (callback) {
+    if (!this.def.url) {
+      return callback(new Error('No URL set, please provide one with --url'))
+    }
+
     fetch(this.def.url)
       .then(response => response.text())
       .then(body => {
