@@ -2,6 +2,7 @@
     "id": "sternengeschichten",
     "description": "Creates a mp3 playlist for all Sternengeschichten from Florian Freistetter",
     "type": "html",
+    "normalize": true,
     "url": "https://scienceblogs.de/astrodicticum-simplex/sternengeschichten/",
     "htmlQuerySelector": ".content > ul > li",
     "htmlIdRegexp": "^Folge ([0-9]*)",

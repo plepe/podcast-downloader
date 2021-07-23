@@ -138,6 +138,10 @@ module.exports = class PodcastEpisode {
   }
 
   normalizeFile (callback) {
+    if (!this.podcast.def.normalize) {
+      return callback()
+    }
+
     const destFile = this.podcast.pathNormalized() + this.filename
 
     if (this.normalizedFile) {

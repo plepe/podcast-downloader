@@ -28,6 +28,11 @@ parser.add_argument('--id', {
   default: null
 })
 
+parser.add_argument('--normalize', {
+  help: 'Shall the audio files be normalized. Default: false, but can be overwritten by the selected profile.',
+  choices: ['true', 'false']
+})
+
 const args = parser.parse_args()
 
 fs.readFile(
@@ -46,6 +51,10 @@ fs.readFile(
 
     if (args.id) {
       def.id = args.id
+    }
+
+    if (args.normalize) {
+      def.normalize = args.normalize == 'true'
     }
 
     const podcast = new Podcast(def, config)

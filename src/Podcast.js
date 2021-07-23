@@ -24,7 +24,13 @@ module.exports = class Podcast {
   createDirectories (callback) {
     async.parallel([
       done => fs.mkdir(this.pathDownloaded(), { recursive: true }, done),
-      done => fs.mkdir(this.pathNormalized(), { recursive: true }, done)
+      done => {
+        if (!this.def.normalize) {
+          return done()
+        }
+
+        fs.mkdir(this.pathNormalized(), { recursive: true }, done)
+      }
     ], err => callback(err))
   }
 
@@ -32,7 +38,13 @@ module.exports = class Podcast {
     async.parallel(
       {
         downloaded: done => listFiles(this.pathDownloaded(), done),
-        normalized: done => listFiles(this.pathNormalized(), done)
+        normalized: done => {
+          if (!this.def.normalize) {
+            return done()
+          }
+
+          listFiles(this.pathNormalized(), done)
+        }
       },
       (err, { downloaded, normalized }) => {
         if (err) {
@@ -50,7 +62,7 @@ module.exports = class Podcast {
             delete downloaded[entry.id]
           }
 
-          if (entry.id in normalized) {
+          if (this.def.normalize && entry.id in normalized) {
             entry.normalizedFile = this.pathNormalized() + normalized[entry.id].filename
 
             if (!entry.name) {
@@ -68,7 +80,7 @@ module.exports = class Podcast {
 
           d.downloadedFile = this.pathDownloaded() + d.filename
 
-          if (id in normalized) {
+          if (this.def.normalize && id in normalized) {
             d.normalizedFile = this.pathNormalized() + normalized[id].filename
             delete normalized[id]
           }
@@ -76,12 +88,14 @@ module.exports = class Podcast {
           add.push(d)
         }
 
-        for (const i in normalized) {
-          const d = normalized[i]
+        if (this.def.normalize) {
+          for (const i in normalized) {
+            const d = normalized[i]
 
-          d.normalizedFile = this.pathNormalized() + d.filename
+            d.normalizedFile = this.pathNormalized() + d.filename
 
-          add.push(d)
+            add.push(d)
+          }
         }
 
         async.each(
