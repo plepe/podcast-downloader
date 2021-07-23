@@ -1,7 +1,7 @@
 {
-  "name": "sternengeschichten2playlist",
+  "name": "podcast-downloader",
   "version": "0.0.0",
-  "description": "Creates a mp3 playlist for all Sternengeschichten from Florian Freistetter",
+  "description": "Downloads all episodes of a podcast and optionally normalizes them. Also creates a JSON playlist.",
   "scripts": {},
   "bin": "./cli.js",
   "author": "Stephan Bösch-Plepelits <skunk@xover.mud.at>",

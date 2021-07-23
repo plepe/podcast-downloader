@@ -1,16 +1,16 @@
-# sternengeschichten2playlist
+# podcast-downloader
 Install:
 ```sh
-git clone https://github.com/plepe/sternengeschichten2playlist
-cd sternengeschichten2playlist
+git clone https://github.com/plepe/podcast-downloader
+cd podcast-downloader
 npm -g install
-sternengeschichten2playlist > playlist.json
+podcast-downloader > playlist.json
 ```
 
 If you don't want to install globally, use this:
 ```sh
-git clone https://github.com/plepe/sternengeschichten2playlist
-cd sternengeschichten2playlist
+git clone https://github.com/plepe/podcast-downloader
+cd podcast-downloader
 npm install
 ./cli > playlist.json
 ```
