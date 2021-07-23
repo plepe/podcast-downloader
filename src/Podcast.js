@@ -97,6 +97,29 @@ module.exports = class Podcast {
     )
   }
 
+  parseListFromRss (callback) {
+    fetch(this.def.url)
+      .then(response => response.text())
+      .then(body => {
+        const dom = new JSDOM(body)
+        const document = dom.window.document
+
+	const list = document.querySelectorAll('rss > channel > item')
+
+	async.eachOf(list,
+	  (entry, index, done) => {
+	    const episode = new PodcastEpisode(this)
+	    this.list.push(episode)
+
+	    episode.parseRssEntry(entry, list.length - index - 1, err => done(err))
+	  },
+	  (err) => {
+	    callback(err)
+	  }
+	)
+      })
+  }
+
   parseListFromPage (callback) {
     fetch(this.def.url)
       .then(response => response.text())
@@ -143,9 +166,20 @@ module.exports = class Podcast {
   }
 
   process (callback) {
+    let parseFun
+
+    switch (this.def.type) {
+      case 'html':
+	parseFun = this.parseListFromPage
+	break
+      case 'rss':
+      default:
+	parseFun = this.parseListFromRss
+    }
+
     async.waterfall(
       [
-        done => this.parseListFromPage(done),
+        done => parseFun.call(this, done),
 	done => this.createDirectories(done),
         //done => this.select(done),
         done => this.loadExistingFiles(done),

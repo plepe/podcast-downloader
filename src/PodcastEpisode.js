@@ -38,6 +38,20 @@ module.exports = class PodcastEpisode {
     callback()
   }
 
+  parseRssEntry (dom, revIndex, callback) {
+    this.htmlTitle = dom.querySelector(':scope > title').textContent
+
+    this.title = this.htmlTitle
+
+    this.name = this.htmlTitle
+
+    this.id = revIndex + 1
+
+    this.url = dom.querySelector(':scope > enclosure').getAttribute('url')
+
+    callback()
+  }
+
   fromExisting (data, callback) {
     for (let k in data) {
       this[k] = data[k]

@@ -7,7 +7,7 @@ const config = {
   parallelTasks: 4
 }
 
-const profile = 'sternengeschichten'
+const profile = 'default'
 
 fs.readFile(
   'profiles/' + profile + '.json',
